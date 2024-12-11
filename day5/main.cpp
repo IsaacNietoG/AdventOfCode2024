@@ -9,11 +9,13 @@
 
 void storeInput(std::string inputfile, std::map<int, std::set<int>> &rules, std::vector<std::vector<int>> &updates);
 bool isRight(std::vector<int> &update, std::map<int , std::set<int>> &rules);
+void sort(std::vector<int> &update, std::map<int , std::set<int>> &rules);
 int getMiddlePage(std::vector<int> &update);
 
 auto main(int argc, char *argv[]) -> int {
     std::string inputFile = "puzzleInput.txt";
     int firstAnswer = 0;
+    int secondAnswer = 0;
     std::map<int , std::set<int>> rules;
     std::vector<std::vector<int>> updates;
 
@@ -25,13 +27,38 @@ auto main(int argc, char *argv[]) -> int {
         if(isRight(update, rules)){
             //STEP 3: Get middle page number and add to firstAnswer
             firstAnswer += getMiddlePage(update);
+        }else{
+            sort(update, rules);
+            secondAnswer += getMiddlePage(update);
         }
     }
 
     //Answer display
     std::cout << firstAnswer << std::endl;
+    std::cout << secondAnswer << std::endl;
 
     return 0;
+}
+
+
+void sort(std::vector<int> &update, std::map<int, std::set<int>> &rules){
+    for(int i = 1; i < update.size(); i++){
+        int currentValue = update[i];
+        for(int j = i-1; j>=0; j--){
+            int previousValue = update[j];
+            auto notFound = rules[currentValue].end();
+            auto search = rules[currentValue].find(previousValue);
+            if(search != notFound){
+                //XOR Swap baby
+                update[i] ^= update[j];
+                update[j] ^= update[i];
+                update[i] ^= update[j];
+
+                i = j-1;
+                break;
+            }
+        }
+    }
 }
 
 void addRule(int key, int value, std::map<int, std::set<int>> &rules){
