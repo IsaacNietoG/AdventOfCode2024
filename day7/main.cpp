@@ -1,6 +1,7 @@
 #include <iostream>
 #include <regex>
 #include <fstream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -44,18 +45,39 @@ Equation getEquation(std::string &string){
     auto digits_end = std::sregex_iterator();
 
     //Get result (first integer)
-    returnable.result = stoi((*digits_begin++).str());
+    std::smatch match = *digits_begin++;
+    int number = std::stoi(match.str());
+    returnable.result = number;
 
     //Get operands (rest of the integers)
     for(std::sregex_iterator i = digits_begin; i!= digits_end; i++){
         std::smatch match = *i;
-        int number = stoi(match.str());
+        int number = std::stoi(match.str());
         returnable.operands.push_back(number);
     }
 
     return returnable;
 }
 
-bool isEquationViable(Equation &equation){
+bool evaluate(std::vector<int> &operands, int result, int index, int current){
+    //Base case
+    if(index == operands.size())
+        return current == result;
 
+    if(evaluate(operands, result, index+1, current + operands[index])){
+        return true;
+    }
+
+    if(evaluate(operands, result, index+1, current * operands[index])){
+        return true;
+    }
+
+    return false;
+}
+
+bool isEquationViable(Equation &equation){
+    if(equation.operands.empty())
+        return false;
+
+    return evaluate(equation.operands, equation.result, 1, equation.operands[0]);
 }
